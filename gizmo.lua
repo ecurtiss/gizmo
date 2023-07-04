@@ -28,8 +28,8 @@ type Style = {
 }
 
 type Gizmo = {
-	__properties: {[number]: any, n: number},
-	style: Style
+	__properties: { [number]: any, n: number },
+	style: Style,
 }
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ local globalStyle: Style = {
 	color = DEFAULT_COLOR,
 	layer = 1,
 	transparency = 0,
-	scale = DEFAULT_SCALE
+	scale = DEFAULT_SCALE,
 }
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -107,7 +107,7 @@ end
 -- Style Instances
 ------------------------------------------------------------------------------------------------------------------------
 
-local function applyStyleToAdornment(style : Style, adornment)
+local function applyStyleToAdornment(style: Style, adornment)
 	adornment.Color3 = style.color
 	adornment.Transparency = style.transparency
 	adornment.ZIndex = style.layer
@@ -115,7 +115,7 @@ local function applyStyleToAdornment(style : Style, adornment)
 	adornment.AlwaysOnTop = true
 end
 
-local function applyStyleToHighlight(style : Style, highlight)
+local function applyStyleToHighlight(style: Style, highlight)
 	highlight.FillColor = style.color
 	highlight.OutlineColor = style.color
 	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
@@ -285,40 +285,39 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 local function createGizmo<T...>(render: (Style, T...) -> ())
-	
-	local class = {__index={}}
-	
-	function class.draw(... : T...)
+	local class = { __index = {} }
+
+	function class.draw(...: T...)
 		if active then
 			render(globalStyle, ...)
 		end
 	end
-	
+
 	type Object = typeof(setmetatable({} :: Gizmo, class))
-	
-	function class.create(... : T...) : Object
+
+	function class.create(...: T...): Object
 		return setmetatable({
 			__properties = table.pack(...),
-			style = table.clone(globalStyle)
+			style = table.clone(globalStyle),
 		}, class)
 	end
-	
+
 	function class.__index:enable()
 		scheduledObjects[self] = true
 	end
-	
+
 	function class.__index:disable()
 		scheduledObjects[self] = nil
 	end
-	
-	function class.__index:update(... : T...)
+
+	function class.__index:update(...: T...)
 		self.__properties = table.pack(...)
 	end
-	
+
 	function class.__index:__render()
 		render(self.style, table.unpack(self.__properties))
 	end
-	
+
 	return table.freeze(class)
 end
 
@@ -357,7 +356,7 @@ local function disable()
 	RunService:UnbindFromRenderStep(moduleId)
 end
 
-workspace:GetAttributeChangedSignal(GLOBAL_ATTRIBUTE):Connect(function ()
+workspace:GetAttributeChangedSignal(GLOBAL_ATTRIBUTE):Connect(function()
 	if workspace:GetAttribute(GLOBAL_ATTRIBUTE) then
 		enable()
 	else
@@ -373,11 +372,11 @@ end
 -- Exports
 ------------------------------------------------------------------------------------------------------------------------
 
-return table.freeze {
-	
+return table.freeze({
+
 	-- Globals
 	style = globalStyle,
-	
+
 	-- Gizmos
 	point = createGizmo(renderPoint),
 	box = createGizmo(renderBox),
@@ -387,5 +386,4 @@ return table.freeze {
 	line = createGizmo(renderLine),
 	arrow = createGizmo(renderArrow),
 	ray = createGizmo(renderRay),
-	
-}
+})
