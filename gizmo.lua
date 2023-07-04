@@ -357,14 +357,14 @@ local function disable()
 end
 
 workspace:GetAttributeChangedSignal(GLOBAL_ATTRIBUTE):Connect(function()
-	if workspace:GetAttribute(GLOBAL_ATTRIBUTE) then
-		enable()
-	else
+	if workspace:GetAttribute(GLOBAL_ATTRIBUTE) == false then
 		disable()
+	else
+		enable()
 	end
 end)
 
-if workspace:GetAttribute(GLOBAL_ATTRIBUTE) then
+if workspace:GetAttribute(GLOBAL_ATTRIBUTE) ~= false then
 	enable()
 end
 
