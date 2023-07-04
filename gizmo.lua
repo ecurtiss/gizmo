@@ -23,6 +23,7 @@ local RunService = game:GetService("RunService")
 ------------------------------------------------------------------------------------------------------------------------
 
 type Style = {
+	alwaysOnTop: boolean,
 	color: Color3,
 	layer: number,
 	transparency: number,
@@ -56,6 +57,7 @@ if container == nil then
 end
 
 local globalStyle: Style = {
+	alwaysOnTop = true,
 	color = DEFAULT_COLOR,
 	layer = 1,
 	transparency = 0,
@@ -125,13 +127,15 @@ local function applyStyleToAdornment(style: Style, adornment)
 	adornment.Transparency = style.transparency
 	adornment.ZIndex = style.layer
 	adornment.Adornee = workspace
-	adornment.AlwaysOnTop = true
+	adornment.AlwaysOnTop = style.alwaysOnTop
 end
 
 local function applyStyleToHighlight(style: Style, highlight)
 	highlight.FillColor = style.color
 	highlight.OutlineColor = style.color
-	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	highlight.DepthMode = if style.alwaysOnTop
+		then Enum.HighlightDepthMode.AlwaysOnTop
+		else Enum.HighlightDepthMode.Occluded
 end
 
 ------------------------------------------------------------------------------------------------------------------------
