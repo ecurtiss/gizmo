@@ -69,16 +69,20 @@ local globalStyle: Style = {
 ------------------------------------------------------------------------------------------------------------------------
 
 local function show(instance)
-	if instance:IsA("PVAdornment") then
+	if instance:IsA("PVAdornment") or instance:IsA("GuiObject") then
 		instance.Visible = true
+	elseif instance:IsA("LayerCollector") then
+		instance.Enabled = true
 	else
 		instance.Enabled = true
 	end
 end
 
 local function hide(instance)
-	if instance:IsA("PVAdornment") then
+	if instance:IsA("PVAdornment") or instance:IsA("GuiObject") then
 		instance.Visible = false
+	elseif instance:IsA("LayerCollector") then
+		instance.Enabled = false
 	else
 		instance.Enabled = false
 	end
@@ -297,6 +301,28 @@ local function renderRay(style, from: Vector3, direction: Vector3)
 	return renderArrow(style, from, from + direction)
 end
 
+local function renderText(style, position: Vector3, text: string, ...)
+	local safeText = tostring(text):format(...)
+	local billboard = get("BillboardGui")
+	local label = get("TextLabel")
+	local textScale = style.scale * 0.25
+	billboard.AlwaysOnTop = style.alwaysOnTop
+	billboard.StudsOffsetWorldSpace = position
+	billboard.Size = UDim2.fromScale(safeText:len() * 0.5 * textScale, textScale)
+	billboard.LightInfluence = 0
+	billboard.Adornee = adornee
+	label.Size = UDim2.fromScale(1, 1)
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.RobotoMono
+	label.TextColor3 = style.color
+	label.TextTransparency = style.transparency
+	label.TextScaled = true
+	label.Text = safeText
+	label.Parent = billboard
+	table.insert(renderQueue, label)
+	table.insert(renderQueue, billboard)
+end
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Gizmo Class Wrapper
 ------------------------------------------------------------------------------------------------------------------------
@@ -350,7 +376,7 @@ local function update()
 	-- Clone the queue and render all instances in it
 	local queue = table.clone(renderQueue)
 	for _, instance in ipairs(queue) do
-		instance.Visible = true
+		show(instance)
 	end
 	table.clear(renderQueue)
 	task.wait()
@@ -403,4 +429,5 @@ return table.freeze({
 	line = createGizmo(renderLine),
 	arrow = createGizmo(renderArrow),
 	ray = createGizmo(renderRay),
+	text = createGizmo(renderText),
 })
