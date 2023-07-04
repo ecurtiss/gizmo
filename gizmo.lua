@@ -10,10 +10,12 @@
 ------------------------------------------------------------------------------------------------------------------------
 
 local GLOBAL_ATTRIBUTE = "EnableGizmos"
+local CONTAINER_TAG = "GizmoContainer"
 
 local DEFAULT_SCALE = 0.1
 local DEFAULT_COLOR = Color3.fromRGB(255, 255, 0)
 
+local CollectionService = game:GetService("CollectionService")
 local RunService = game:GetService("RunService")
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -42,10 +44,16 @@ local active = false
 local scheduledObjects = {}
 local renderQueue = {}
 local instanceCache = {}
-local container = Instance.new("Folder", workspace)
 
-container.Name = "Gizmos"
-container.Archivable = false
+-- Hoarcekat compatibility: Attempt to reuse existing container
+local container = CollectionService:GetTagged(CONTAINER_TAG)[1]
+
+if container == nil then
+	container = Instance.new("Folder", workspace)
+	container.Name = "Gizmos"
+	container.Archivable = false
+	CollectionService:AddTag(container, CONTAINER_TAG)
+end
 
 local globalStyle: Style = {
 	color = DEFAULT_COLOR,
@@ -101,6 +109,11 @@ local function release(instance)
 	end
 	hide(instance)
 	table.insert(classCache, instance)
+end
+
+-- Hoarcekat compatibility: Release existing children
+for _, child in container:GetChildren() do
+	release(child)
 end
 
 ------------------------------------------------------------------------------------------------------------------------
