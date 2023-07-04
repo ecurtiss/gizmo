@@ -322,6 +322,15 @@ local function renderRay(style, from: Vector3, direction: Vector3)
 	return renderArrow(style, from, from + direction)
 end
 
+local function renderPlane(style, cf: CFrame, size: Vector2?)
+	size = size or Vector2.new(10, 10)
+	local adornmentPlane = get("BoxHandleAdornment")
+	adornmentPlane.CFrame = cf
+	adornmentPlane.Size = Vector3.new(size.X, size.Y, 0)
+	applyStyleToAdornment(style, adornmentPlane)
+	table.insert(renderQueue, adornmentPlane)
+end
+
 local function renderText(style, position: Vector3, text: string, ...)
 	local safeText = tostring(text):format(...)
 	local billboard = get("BillboardGui")
@@ -450,5 +459,6 @@ return table.freeze({
 	line = createGizmo(renderLine),
 	arrow = createGizmo(renderArrow),
 	ray = createGizmo(renderRay),
+	plane = createGizmo(renderPlane),
 	text = createGizmo(renderText),
 })
