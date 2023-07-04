@@ -11,6 +11,7 @@
 
 local GLOBAL_ATTRIBUTE = "EnableGizmos"
 local CONTAINER_TAG = "GizmoContainer"
+local ADORNEE_TAG = "GizmoAdornee"
 
 local DEFAULT_SCALE = 0.1
 local DEFAULT_COLOR = Color3.fromRGB(255, 255, 0)
@@ -54,6 +55,26 @@ if container == nil then
 	container.Name = "Gizmos"
 	container.Archivable = false
 	CollectionService:AddTag(container, CONTAINER_TAG)
+end
+
+-- Using workspace as a PVAdornment's adornee can cause the PVAdornments to
+-- shift away from the origin in some cases. Using a part prevents this.
+-- Hoarcekat compatibility: Attempt to reuse existing adornee part
+local adornee = CollectionService:GetTagged(ADORNEE_TAG)[1]
+
+if adornee == nil then
+	adornee = Instance.new("Part", workspace)
+	adornee.Name = "GizmoAdornee"
+	adornee.Anchored = true
+	adornee.Archivable = false
+	adornee.CanCollide = false
+	adornee.CanQuery = false
+	adornee.CanTouch = false
+	adornee.Locked = true
+	adornee.Size = Vector3.one
+	adornee.CFrame = CFrame.new()
+	adornee.Transparency = 1
+	CollectionService:AddTag(adornee, ADORNEE_TAG)
 end
 
 local globalStyle: Style = {
@@ -130,7 +151,7 @@ local function applyStyleToAdornment(style: Style, adornment)
 	adornment.Color3 = style.color
 	adornment.Transparency = style.transparency
 	adornment.ZIndex = style.layer
-	adornment.Adornee = workspace
+	adornment.Adornee = adornee
 	adornment.AlwaysOnTop = style.alwaysOnTop
 end
 
