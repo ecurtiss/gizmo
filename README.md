@@ -15,8 +15,13 @@ The following types are supported:
 - sphere: Position, Radius
 - wiresphere: Position, Radius
 - line: Position, Position
+- pixelLine: Position, Position
 - arrow: Position, Position
 - ray: Position, Direction
+- plane: CFrame, Size
+- disk: CFrame, Radius
+- text: Position, Text
+- cframe: CFrame
 
 ### gizmo.\<type\>.draw(...) -> void
 
