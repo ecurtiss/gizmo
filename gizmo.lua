@@ -51,7 +51,7 @@ local instanceCache = {}
 local container = CollectionService:GetTagged(CONTAINER_TAG)[1]
 
 if container == nil then
-	container = Instance.new("Folder", workspace)
+	container = Instance.new("Folder", workspace.CurrentCamera)
 	container.Name = "Gizmos"
 	container.Archivable = false
 	CollectionService:AddTag(container, CONTAINER_TAG)
@@ -63,7 +63,7 @@ end
 local adornee = CollectionService:GetTagged(ADORNEE_TAG)[1]
 
 if adornee == nil then
-	adornee = Instance.new("Part", workspace)
+	adornee = Instance.new("Part", workspace.CurrentCamera)
 	adornee.Name = "GizmoAdornee"
 	adornee.Anchored = true
 	adornee.Archivable = false
@@ -272,7 +272,7 @@ local function renderWireSphere(style, position: Vector3, radius: number)
 	adornmentX.InnerRadius = innerRadius
 	adornmentX.Height = style.scale
 	adornmentX.CFrame = relativeOrientation
-	applyStyleToAdornment(adornmentX)
+	applyStyleToAdornment(style, adornmentX)
 	table.insert(renderQueue, adornmentX)
 	adornmentY.Radius = outerRadius
 	adornmentY.InnerRadius = innerRadius
@@ -299,9 +299,23 @@ local function renderLine(style, from: Vector3, to: Vector3)
 	table.insert(renderQueue, adornment)
 end
 
+local function renderPixelLine(style, from: vector3, to: Vector3)
+	local distance = (to - from).Magnitude
+	local adornment = get("LineHandleAdornment")
+	adornment.Thickness = style.scale
+	adornment.Length = distance
+	adornment.CFrame = CFrame.lookAt(from, to)
+	applyStyleToAdornment(style, adornment)
+	table.insert(renderQueue, adornment)
+end
+
 local function renderArrow(style, from: Vector3, to: Vector3)
+	local length = (to - from).Magnitude
 	local coneHeight = style.scale * 3
-	local distance = math.abs((to - from).Magnitude - coneHeight)
+	if length < coneHeight then
+		coneHeight *= length / coneHeight
+	end
+	local distance = math.max((to - from).Magnitude - coneHeight, 0)
 	local orientation = CFrame.lookAt(from, to)
 	local adornmentLine = get("CylinderHandleAdornment")
 	local adornmentCone = get("ConeHandleAdornment")
@@ -331,6 +345,16 @@ local function renderPlane(style, cf: CFrame, size: Vector2?)
 	table.insert(renderQueue, adornmentPlane)
 end
 
+local function renderDisk(style, cf: CFrame, radius: number)
+	radius = radius or 10
+	local adornmentDisk = get("CylinderHandleAdornment")
+	adornmentDisk.CFrame = cf
+	adornmentDisk.Radius = radius * style.scale
+	adornmentDisk.Height = 0
+	applyStyleToAdornment(style, adornmentDisk)
+	table.insert(renderQueue, adornmentDisk)
+end
+
 local function renderText(style, position: Vector3, text: string, ...)
 	local safeText = tostring(text):format(...)
 	local billboard = get("BillboardGui")
@@ -351,6 +375,18 @@ local function renderText(style, position: Vector3, text: string, ...)
 	label.Parent = billboard
 	table.insert(renderQueue, label)
 	table.insert(renderQueue, billboard)
+end
+
+local function renderCFrame(style, cframe: CFrame)
+	local color = style.color
+	local pos = cframe.Position
+	style.color = Color3.new(1, 0, 0)
+	renderRay(style, pos, cframe.RightVector)
+	style.color = Color3.new(0, 1, 0)
+	renderRay(style, pos, cframe.UpVector)
+	style.color = Color3.new(0, 0, 1)
+	renderRay(style, pos, cframe.LookVector)
+	style.color = color
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -460,5 +496,8 @@ return table.freeze({
 	arrow = createGizmo(renderArrow),
 	ray = createGizmo(renderRay),
 	plane = createGizmo(renderPlane),
+	disk = createGizmo(renderDisk),
 	text = createGizmo(renderText),
+	pixelLine = createGizmo(renderPixelLine),
+	cframe = createGizmo(renderCFrame)
 })
